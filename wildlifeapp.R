@@ -8,29 +8,116 @@ library(leaflet.extras)
 library(DT)
 library(shinyWidgets)
 library(digest)
+library(shinyjs)
 
 # Helper function
 get_icon_url <- function(species) {
   case_when(
-    grepl("Crocodile|Alligator", species, ignore.case = TRUE) ~ "crocodile.png",
-    grepl("Elephant", species, ignore.case = TRUE) ~ "elephant.png",
-    grepl("Lion", species, ignore.case = TRUE) ~ "lion.png",
-    grepl("Hippo", species, ignore.case = TRUE) ~ "hippo.png",
-    grepl("Hyena", species, ignore.case = TRUE) ~ "hyena.png",
-    grepl("Buffalo", species, ignore.case = TRUE) ~ "buffalo.png",
-    grepl("Python|Boa", species, ignore.case = TRUE) ~ "python.png",
-    grepl("Cobra", species, ignore.case = TRUE) ~ "cobra.png",
-    grepl("Viper|Adder", species, ignore.case = TRUE) ~ "viper.png",
-    grepl("Mamba", species, ignore.case = TRUE) ~ "mamba.png",
-    grepl("Snake", species, ignore.case = TRUE) ~ "snake.png",
+    # Crocodilians
+    grepl("Crocodile|Nile Crocodile|Alligator", species, ignore.case = TRUE) ~ "crocodile.png",
+    
+    # Elephants
+    grepl("Elephant|African Elephant|Savannah Elephant|Forest Elephant", species, ignore.case = TRUE) ~ "elephant.png",
+    
+    # Big cats
+    grepl("Lion|Southern Lion", species, ignore.case = TRUE) ~ "lion.png",
+    grepl("Leopard|Panther", species, ignore.case = TRUE) ~ "leopard.png",
+    grepl("Cheetah", species, ignore.case = TRUE) ~ "cheetah.png",
+    
+    # Hippos
+    grepl("Hippo|Hippopotamus|Common Hippopotamus|Pygmy Hippopotamus", species, ignore.case = TRUE) ~ "hippo.png",
+    
+    # Hyenas & relatives
+    grepl("Hyena|Spotted Hyena|Striped Hyena|Brown Hyena|Hyaena|Aardwolf", species, ignore.case = TRUE) ~ "hyena.png",
+    
+    # Buffalo
+    grepl("Buffalo|Cape Buffalo|African Buffalo", species, ignore.case = TRUE) ~ "buffalo.png",
+    
+    # Rhinos
+    grepl("Rhino|Rhinoceros|Black Rhino|White Rhino", species, ignore.case = TRUE) ~ "rhino.png",
+    
+    # Giraffes
+    grepl("Giraffe|Masai Giraffe|Reticulated Giraffe", species, ignore.case = TRUE) ~ "giraffe.png",
+    
+    # Zebras
+    grepl("Zebra|Plains Zebra|Grévy's Zebra|Mountain Zebra", species, ignore.case = TRUE) ~ "zebra.png",
+    
+    # Antelopes & Gazelles
+    grepl("Impala|Gazelle|Thomson's Gazelle|Grant's Gazelle|Eland|Kudu|Waterbuck|Sable Antelope|Hartebeest|Topi|Oribi|Bushbuck", species, ignore.case = TRUE) ~ "antelope.png",
+    
+    # Primates
+    grepl("Baboon|Vervet Monkey|Colobus Monkey|Sykes Monkey|Tantalus Monkey|Chimpanzee|Monkey", species, ignore.case = TRUE) ~ "monkey.png",
+    
+    # Snakes
+    grepl("Python|Boa|African Rock Python|Burmese Python", species, ignore.case = TRUE) ~ "python.png",
+    grepl("Cobra|Black Mamba|Green Mamba|Spitting Cobra|Egyptian Cobra", species, ignore.case = TRUE) ~ "cobra.png",
+    grepl("Viper|Puff Adder|Gaboon Viper|Rhinoceros Viper|Horned Viper|Saw-scaled Viper", species, ignore.case = TRUE) ~ "viper.png",
+    grepl("Snake|Adder|Sand Snake|Whip Snake|Night Adder", species, ignore.case = TRUE) ~ "snake.png",
+    
+    # Insects
+    grepl("Mosquito|Anopheles|Aedes|Culex", species, ignore.case = TRUE) ~ "mosquito.png",
+    grepl("Tsetse Fly", species, ignore.case = TRUE) ~ "tsetse_fly.png",
+    grepl("Termite", species, ignore.case = TRUE) ~ "termite.png",
+    
+    # Birds (some common large species)
+    grepl("Ostrich", species, ignore.case = TRUE) ~ "ostrich.png",
+    grepl("Eagle|Vulture|Kite|Harrier", species, ignore.case = TRUE) ~ "bird_of_prey.png",
+    grepl("Hornbill", species, ignore.case = TRUE) ~ "hornbill.png",
+    grepl("Secretary Bird", species, ignore.case = TRUE) ~ "secretary_bird.png",
+    grepl("Flamingo", species, ignore.case = TRUE) ~ "flamingo.png",
+    grepl("Marabou Stork", species, ignore.case = TRUE) ~ "marabou_stork.png",
+    
+    
+    # Smaller carnivores
+    grepl("Caracal", species, ignore.case = TRUE) ~ "caracal.png",
+    grepl("Serval", species, ignore.case = TRUE) ~ "serval.png",
+    grepl("Mongoose", species, ignore.case = TRUE) ~ "mongoose.png",
+    grepl("Honey Badger|Ratel", species, ignore.case = TRUE) ~ "honey_badger.png",
+    
+    # Amphibians
+    grepl("Frog|Toad", species, ignore.case = TRUE) ~ "frog.png",
+    
+    # Others
+    grepl("Warthog", species, ignore.case = TRUE) ~ "warthog.png",
+    grepl("Jackal|Fox", species, ignore.case = TRUE) ~ "jackal.png",
+    
+    # Default icon for unknown species
     TRUE ~ "default.png"
   )
 }
 
-# Load & save data
+
+
+
+# Ensure the data folder exists
+ensure_data_dir <- function() {
+  dir_path <- "data"
+  if (!dir.exists(dir_path)) {
+    dir.create(dir_path)
+  }
+  return(dir_path)
+}
+
+# Load data from the persistent folder
 load_data <- function() {
-  files <- list.files(pattern = "observations-\\d+\\.csv$", full.names = TRUE)
-  data <- lapply(files, function(f) {
+  data_dir <- ensure_data_dir()
+  master_file <- file.path(data_dir, "observations_master.csv")
+  
+  # Files to include in addition to master
+  specific_files <- c(
+    "observations-574907.csv", "observations-574910.csv", "observations-574923.csv",
+    "observations-574925.csv", "observations-574927.csv", "observations-574987.csv",
+    "observations-574989.csv"
+  )
+  
+  files_to_load <- c(master_file, file.path(data_dir, specific_files))
+  files_to_load <- files_to_load[file.exists(files_to_load)]  # Only existing files
+  
+  if (length(files_to_load) == 0) {
+    return(data.frame())  # Nothing to load
+  }
+  
+  data <- lapply(files_to_load, function(f) {
     read_csv(f, show_col_types = FALSE) %>%
       select(any_of(c("id", "observed_on", "common_name", "latitude", "longitude",
                       "place_guess", "description", "positional_accuracy"))) %>%
@@ -46,20 +133,74 @@ load_data <- function() {
     )
 }
 
+
+
+
+# Save new unique data into the persistent folder
 save_new_data <- function(new_df) {
-  existing_data <- load_data()
-  new_df$hash <- apply(new_df, 1, digest)
-  existing_hashes <- apply(existing_data, 1, digest)
-  unique_new <- new_df[!new_df$hash %in% existing_hashes, ]
-  unique_new$hash <- NULL
+  data_dir <- ensure_data_dir()
+  master_file <- file.path(data_dir, "observations_master.csv")
   
-  if (nrow(unique_new) > 0) {
-    timestamp <- format(Sys.time(), "%Y%m%d%H%M%S")
-    write_csv(unique_new, paste0("observations-", timestamp, ".csv"))
+  required_cols <- c("id", "observed_on", "common_name", "latitude", "longitude")
+  if (!all(required_cols %in% colnames(new_df))) {
+    stop("Uploaded data is missing one or more required columns: ", 
+         paste(setdiff(required_cols, colnames(new_df)), collapse = ", "))
   }
+  
+  new_df <- new_df[complete.cases(new_df), ]
+  if (nrow(new_df) == 0) {
+    stop("All rows contain missing values after filtering. No valid data to save.")
+  }
+  
+  # Load existing master data if it exists, else empty df
+  if (file.exists(master_file)) {
+    existing_data <- read_csv(master_file, show_col_types = FALSE) %>%
+      mutate(observed_on = as.Date(observed_on))
+  } else {
+    existing_data <- data.frame()
+  }
+  
+  # Ensure columns match (ignore icon_url if present)
+  existing_cols <- colnames(existing_data)
+  new_cols <- colnames(new_df)
+  
+  existing_cols_no_icon <- setdiff(existing_cols, "icon_url")
+  
+  missing_cols <- setdiff(existing_cols_no_icon, new_cols)
+  if (length(missing_cols) > 0) {
+    stop("New data is missing some columns present in existing data (excluding 'icon_url'): ", 
+         paste(missing_cols, collapse = ", "))
+  }
+  
+  if (length(existing_cols_no_icon) > 0) {
+    new_df <- new_df[, existing_cols_no_icon, drop = FALSE]
+  }
+  
+  # Combine existing + new
+  combined <- bind_rows(existing_data[, existing_cols_no_icon, drop=FALSE], new_df)
+  
+  # Remove duplicates
+  # Use the same hash method
+  hash_row <- function(df) {
+    apply(df, 1, function(row) digest(paste(as.character(row), collapse = "|")))
+  }
+  
+  combined$hash <- hash_row(combined)
+  combined_unique <- combined[!duplicated(combined$hash), ]
+  combined_unique$hash <- NULL
+  
+  # Save combined unique back to master CSV
+  write_csv(combined_unique, master_file)
+  
+  message(paste("Saved", nrow(combined_unique) - nrow(existing_data), "new unique rows."))
 }
+
+
+
 ##UI
+
 ui <- fluidPage(
+  useShinyjs(),
   tags$head(
     # Custom Dark Mode CSS
     tags$style(HTML("
@@ -67,7 +208,6 @@ ui <- fluidPage(
         background-color: #2c3e50;
         color: #ecf0f1;
       }
-
       .dark-mode .well,
       .dark-mode .panel,
       .dark-mode .form-control,
@@ -89,61 +229,50 @@ ui <- fluidPage(
         color: #ecf0f1 !important;
         border-color: #7f8c8d !important;
       }
-
       .dark-mode .selectize-dropdown-content .option {
         background-color: #34495e;
         color: #ecf0f1;
       }
-
       .dark-mode .selectize-dropdown-content .option.active {
         background-color: #2c3e50;
       }
-
       .dark-mode .btn {
         background-color: #3498db !important;
         border-color: #2980b9 !important;
         color: #ecf0f1 !important;
       }
-
       .dark-mode .btn-default {
         background-color: #2c3e50 !important;
         color: #ecf0f1 !important;
         border: 1px solid #7f8c8d;
       }
-
       .dark-mode .form-group label,
       .dark-mode .control-label,
       .dark-mode .checkbox label {
         color: #ecf0f1 !important;
       }
-
       .dark-mode .checkbox input[type='checkbox'] {
         accent-color: #3498db;
       }
-
       .dark-mode input[type='file'] {
         background-color: #34495e;
         color: #ecf0f1;
       }
-
       /* DT tables */
       .dark-mode table.dataTable {
         background-color: #2c3e50;
         color: #ecf0f1;
       }
-
       .dark-mode .dataTables_wrapper .dataTables_filter input,
       .dark-mode .dataTables_wrapper .dataTables_length select {
         background-color: #34495e;
         color: #ecf0f1;
         border: 1px solid #7f8c8d;
       }
-
       .dark-mode .dataTables_wrapper .dataTables_paginate .paginate_button {
         color: #ecf0f1 !important;
         background-color: #34495e !important;
       }
-
       .dark-mode pre {
         background-color: #34495e;
         color: #ecf0f1;
@@ -151,9 +280,27 @@ ui <- fluidPage(
         padding: 10px;
         border-radius: 5px;
       }
+
+      /* Fullscreen map styles */
+      #map_container.fullscreen {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 1050 !important; /* on top of everything */
+        border-radius: 0 !important;
+        box-shadow: none !important;
+      }
+      
+      /* Hide sidebar and mainPanel elements in fullscreen */
+      #sidebarPanel.hidden, 
+      #mainPanel.hidden {
+        display: none !important;
+      }
     ")),
     
-    # JS for toggling dark mode
+    # JS for toggling dark mode and fullscreen map
     tags$script(HTML("
       Shiny.addCustomMessageHandler('toggleDark', function(isDark) {
         if (isDark) {
@@ -162,18 +309,35 @@ ui <- fluidPage(
           document.body.classList.remove('dark-mode');
         }
       });
+      
+      Shiny.addCustomMessageHandler('toggleFullscreenMap', function(isFullscreen) {
+        var mapContainer = document.getElementById('map_container');
+        var sidebar = document.getElementById('sidebarPanel');
+        var main = document.getElementById('mainPanel');
+        if (isFullscreen) {
+          mapContainer.classList.add('fullscreen');
+          if(sidebar) sidebar.classList.add('hidden');
+          if(main) main.classList.add('hidden');
+        } else {
+          mapContainer.classList.remove('fullscreen');
+          if(sidebar) sidebar.classList.remove('hidden');
+          if(main) main.classList.remove('hidden');
+        }
+      });
     "))
   ),
   
   titlePanel(
     div(style = "text-align:center; font-family: 'Segoe UI', sans-serif;",
-        h1("🦁 Dangerous Wildlife Observations in Kenya"),
+        h1("🦁🦓🦒 Wildlife Observations 🐘🐆🌍"),
         p(style = "font-size: 16px; color: #7f8c8d;", "Stay informed. Stay safe.")
     )
   ),
   
+  # Wrap sidebarPanel and mainPanel with IDs so we can hide/show
   sidebarLayout(
     sidebarPanel(
+      id = "sidebarPanel",
       style = "border-radius: 10px; padding: 20px;",
       
       switchInput("dark_mode", "🌙 Dark Mode", onLabel = "ON", offLabel = "OFF", size = "mini"),
@@ -181,6 +345,11 @@ ui <- fluidPage(
       
       tags$hr(),
       fileInput("upload", "📁 Upload Observations CSV", accept = ".csv"),
+      tags$div(
+        style = "font-size: 14px; color: #95a5a6; margin-top: -10px; margin-bottom: 15px;",
+        HTML("🔎 You can <b>download wildlife observation data</b> from <a href='https://www.inaturalist.org/observations/' target='_blank'>iNaturalist.org</a>.<br>
+        🌍 Upload data from <b>your own country</b> to help expand the observation system.")
+      ),
       
       sliderInput("radius", "📏 Search Radius (km):", min = 1, max = 100, value = 10, step = 1),
       
@@ -212,9 +381,24 @@ ui <- fluidPage(
     ),
     
     mainPanel(
+      id = "mainPanel",
       style = "padding: 10px; border-radius: 10px;",
       
-      leafletOutput("map", height = "600px"),
+      actionButton("toggle_map", "Expand/Collapse Map", icon = icon("arrows-alt"), class = "btn btn-secondary"),
+      
+      div(
+        id = "map_container",
+        style = "height: 600px;",
+        leafletOutput("map", width = "100%", height = "100%")
+      ),
+      
+      # Smooth transition style for map container height changes
+      tags$style(HTML("
+        #map_container {
+          transition: all 0.5s ease;
+          overflow: hidden;
+        }
+      ")),
       
       tags$br(),
       h4("📍 Nearby Sightings"),
@@ -346,6 +530,20 @@ server <- function(input, output, session) {
         )
     }
   })
+  
+  
+  map_expanded <- reactiveVal(FALSE)
+  
+  observeEvent(input$toggle_map, {
+    if (map_expanded()) {
+      runjs("document.getElementById('map_container').style.height = '600px';")
+      map_expanded(FALSE)
+    } else {
+      runjs("document.getElementById('map_container').style.height = '90vh';")
+      map_expanded(TRUE)
+    }
+  })
+  
   
   # Geolocation
   observeEvent(input$locate, {
