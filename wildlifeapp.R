@@ -9,11 +9,12 @@ library(DT)
 library(shinyWidgets)
 library(digest)
 library(shinyjs)
+options(shiny.maxRequestSize = 100 * 1024^2)  # 50 MB limit
 
 # Helper function
 get_icon_url <- function(species) {
   case_when(
-    # Crocodilians
+    # Crocodiles
     grepl("Crocodile|Nile Crocodile|Alligator", species, ignore.case = TRUE) ~ "crocodile.png",
     
     # Elephants
@@ -48,6 +49,70 @@ get_icon_url <- function(species) {
     # Primates
     grepl("Baboon|Vervet Monkey|Colobus Monkey|Sykes Monkey|Tantalus Monkey|Chimpanzee|Monkey", species, ignore.case = TRUE) ~ "monkey.png",
     
+    grepl("Wild Boar|Bush Pig|Giant Forest Hog", species, ignore.case = TRUE) ~ "wild_boar.png",
+    
+    grepl("Wild Dog|African Wild Dog|Painted Dog", species, ignore.case = TRUE) ~ "wild_dog.png",
+    
+    grepl("Tortoise", species, ignore.case = TRUE) ~ "tortoise.png",
+    
+    grepl("Turtle", species, ignore.case = TRUE) ~ " turtle.png",
+    
+    grepl("Crab", species, ignore.case = TRUE) ~ "crab.png",
+    
+    grepl("Jellyfish", species, ignore.case = TRUE) ~ "jellyfish.png",
+    
+    grepl("Octopus|Squid", species, ignore.case = TRUE) ~ "octopus.png",
+
+    grepl("Seahorse", species, ignore.case = TRUE) ~ "seahorse.png",
+  
+    grepl("Stingray|Ray", species, ignore.case = TRUE) ~ "stingray.png",
+
+    grepl("Walrus", species, ignore.case = TRUE) ~ "walrus.png",
+
+    grepl("Shark", species, ignore.case = TRUE) ~ "shark.png",
+    
+    grepl("Lobster", species, ignore.case = TRUE) ~ "lobster.png",
+    
+    grepl("Prawn", species, ignore.case = TRUE) ~ "prawn.png",
+    
+    grepl("Starfish", species, ignore.case = TRUE) ~ "starfish.png",
+    
+    grepl("Whale", species, ignore.case = TRUE) ~ "whale.png",
+    
+    grepl("Bear", species, ignore.case = TRUE) ~ "bear.png",
+    
+    grepl("Bearded dragon", species, ignore.case = TRUE) ~ "bearded_dragon.png",
+    
+    grepl("Beaver", species, ignore.case = TRUE) ~ "beaver.png",
+    
+    grepl("Jaguar", species, ignore.case = TRUE) ~ "jaguar.png",
+    
+    grepl("Deer", species, ignore.case = TRUE) ~ "deer.png",
+    
+    grepl("Fox", species, ignore.case = TRUE) ~ "fox.png",
+    
+    grepl("Kangaroo", species, ignore.case = TRUE) ~ "kangaroo.png",
+    
+    grepl("Panda", species, ignore.case = TRUE) ~ "panda.png",
+    
+    grepl("Lemur", species, ignore.case = TRUE) ~ "lemur.png",
+    
+    grepl("Llama", species, ignore.case = TRUE) ~ "llama.png",
+    
+    grepl("Puma", species, ignore.case = TRUE) ~ "puma.png",
+    
+    grepl("Sloth", species, ignore.case = TRUE) ~ "sloth.png",
+    
+    grepl("Slug", species, ignore.case = TRUE) ~ "slug.png",
+    
+    grepl("Tapir", species, ignore.case = TRUE) ~ "tapir.png",
+    
+    grepl("Wildbeest", species, ignore.case = TRUE) ~ "wildbeest.png",
+    
+    grepl("Wolf", species, ignore.case = TRUE) ~ "wolf.png",
+    
+    grepl("Racoon", species, ignore.case = TRUE) ~ "racoon.png",
+    
     # Snakes
     grepl("Python|Boa|African Rock Python|Burmese Python", species, ignore.case = TRUE) ~ "python.png",
     grepl("Cobra|Black Mamba|Green Mamba|Spitting Cobra|Egyptian Cobra", species, ignore.case = TRUE) ~ "cobra.png",
@@ -56,17 +121,37 @@ get_icon_url <- function(species) {
     
     # Insects
     grepl("Mosquito|Anopheles|Aedes|Culex", species, ignore.case = TRUE) ~ "mosquito.png",
-    grepl("Tsetse Fly", species, ignore.case = TRUE) ~ "tsetse_fly.png",
+    grepl("Fly|Mayfly|Crane|Firefly|Gallinipper|Tsetse Fly", species, ignore.case = TRUE) ~ "tsetse_fly.png",
     grepl("Termite", species, ignore.case = TRUE) ~ "termite.png",
+    grepl("Millipede|Centipede|Myriapod", species, ignore.case = TRUE) ~ "millipede_centipede.png",
+    grepl("Spider|Orbweaver|Meshweaver|Sheet-weaver|Micropanther", species, ignore.case = TRUE) ~ "spider.png",
+    grepl("Butterfly|Monarch|Viceroy|Swallowtail|Morpho|Fritillary|Checkerspot|Skipper", species, ignore.case = TRUE) ~ "butterfly.png",
+    grepl("Beetle|Scarab|Cadelle|Ladybug|Weevil|Discoderus", species, ignore.case = TRUE) ~ "beetle.png",
+    grepl("Ant", species, ignore.case = TRUE) ~ "ant.png",
+    grepl("Grasshopper|Katydid|Cricket|Locust", species, ignore.case = TRUE) ~ "grasshopper.png",
+    grepl("Bug|Aphid|Leafhopper|Planthopper|Phylloxera|Mealybug", species, ignore.case = TRUE) ~ "bug.png",
+    grepl("Bee|Beewolf|Bee-killer", species, ignore.case = TRUE) ~ "bee.png",
+    grepl("Wasp|Mantid|Mantis", species, ignore.case = TRUE) ~ "wasp.png",
+    grepl("Moth|Sheepmoth|Cloudywing|Duskywing", species, ignore.case = TRUE) ~ "moth.png",
+    grepl("Damselfly|Dancer", species, ignore.case = TRUE) ~ "damselfly.png",
+    grepl("Springtail|Bristletail|Prostig|Orthoclad|Crustacean|Isopod|Ostracod|Copepod|Amphipod|Anomopod|Arachnid|Harvestman|Scorpion|Solifuge", species, ignore.case = TRUE) ~ "arachnid.png",
+    grepl("Hanging-thieves|Crescents|Cicadas|Commas|Grass-Veneers|Pillbugs|Caddisflies|Plumetops|Queen|Coneheads|Microcaddisflies|Marauders|Harvester|Midgets|Microleafhoppers|Triops|Meadowhawks|Termites|Casebearers|Roadside-Skippers|Streaktails|Baskettails|Prostigs|Bladetails|Mesostigs|Aphideaters|Sedgesitters|Hayworms|Globetails|Amberwings|Psylloids|Pleurolomas|Springflies|Saw-wing|Boopies|Stoneflies|Scallopwings|Sanddragons|Pitheads|Malachite|Cruisers|Mygalomorphs|Wood-Nymphs|Spongillaflies|Firebrat|Endothenias|Pufftails|Phylloxerans|curved-ribbon|Earwigs|Horntails|Clipper|Owlflies|Ringtails|Sharpshooters|Donacia|Dogfaces|Kite-Swallowtails|Shadowdragons|Lovebug|Fleas|Mochas", species, ignore.case = TRUE) ~ "insect.png",
+    grepl("Dragonfly", species, ignore.case = TRUE) ~ "dragonfly.png",
     
-    # Birds (some common large species)
+     # Birds (some common large species)
     grepl("Ostrich", species, ignore.case = TRUE) ~ "ostrich.png",
     grepl("Eagle|Vulture|Kite|Harrier", species, ignore.case = TRUE) ~ "bird_of_prey.png",
     grepl("Hornbill", species, ignore.case = TRUE) ~ "hornbill.png",
     grepl("Secretary Bird", species, ignore.case = TRUE) ~ "secretary_bird.png",
     grepl("Flamingo", species, ignore.case = TRUE) ~ "flamingo.png",
     grepl("Marabou Stork", species, ignore.case = TRUE) ~ "marabou_stork.png",
-    
+    grepl("Pelican", species, ignore.case = TRUE) ~ "pelican.png",
+    grepl("Kingfisher", species, ignore.case = TRUE) ~ "kingfisher.png",
+    grepl("Weaver|Sunbird|Drongo", species, ignore.case = TRUE) ~ "small_bird.png",
+    grepl("duck", species, ignore.case = TRUE) ~ "duck.png",
+    grepl("owl", species, ignore.case = TRUE) ~ "owl.png",
+    grepl("parrot", species, ignore.case = TRUE) ~ "parrot.png",
+    grepl("Crane|Crowned Crane", species, ignore.case = TRUE) ~ "crane.png",
     
     # Smaller carnivores
     grepl("Caracal", species, ignore.case = TRUE) ~ "caracal.png",
@@ -74,12 +159,35 @@ get_icon_url <- function(species) {
     grepl("Mongoose", species, ignore.case = TRUE) ~ "mongoose.png",
     grepl("Honey Badger|Ratel", species, ignore.case = TRUE) ~ "honey_badger.png",
     
+    #🐊 Reptiles
+    grepl("Monitor Lizard|Lizard|Agama", species, ignore.case = TRUE) ~ "lizard.png",
+    grepl("Gecko", species, ignore.case = TRUE) ~ "gecko.png",
+    grepl("Newt|Salamander", species, ignore.case = TRUE) ~ "salamander.png",
+    grepl("chameleon", species, ignore.case = TRUE) ~ "chameleon.png",
+    
+    # Rodents & small mammals
+    grepl("Porcupine", species, ignore.case = TRUE) ~ "porcupine.png",
+    grepl("Rat|Mouse|Gerbil|Dormouse", species, ignore.case = TRUE) ~ "rodent.png",
+    grepl("Squirrel", species, ignore.case = TRUE) ~ "squirrel.png",
+    grepl("Mole|Shrew", species, ignore.case = TRUE) ~ "mole.png",
+    grepl("Hedgehog", species, ignore.case = TRUE) ~ "hedgehog.png",
+    
     # Amphibians
     grepl("Frog|Toad", species, ignore.case = TRUE) ~ "frog.png",
+    
+    # Aquatic & semi-aquatic
+    grepl("Otter", species, ignore.case = TRUE) ~ "otter.png",
+    grepl("Seal|Sea Lion", species, ignore.case = TRUE) ~ "seal.png",
+    grepl("Dolphin|Whale", species, ignore.case = TRUE) ~ "dolphin.png",
+    
+    grepl("Tilapia|Catfish|Nile Perch|fish", species, ignore.case = TRUE) ~ "fish.png",
+    
     
     # Others
     grepl("Warthog", species, ignore.case = TRUE) ~ "warthog.png",
     grepl("Jackal|Fox", species, ignore.case = TRUE) ~ "jackal.png",
+    grepl("Flying Fox|Bat|Fruit Bat", species, ignore.case = TRUE) ~ "bat.png",
+    grepl("Hare|Rabbit|Scrub Hare", species, ignore.case = TRUE) ~ "hare.png",
     
     # Default icon for unknown species
     TRUE ~ "default.png"
@@ -412,7 +520,7 @@ ui <- fluidPage(
 )
 
 
-
+options(shiny.maxRequestSize = 100 * 1024^2) 
 
 # Server
 server <- function(input, output, session) {
