@@ -112,6 +112,10 @@ get_icon_url <- function(species) {
     grepl("Wolf", species, ignore.case = TRUE) ~ "wolf.png",
     
     grepl("Racoon", species, ignore.case = TRUE) ~ "racoon.png",
+
+    grepl("Millipede|Centipede|Myriapod", species, ignore.case = TRUE) ~ "millipede_centipede.png",
+    
+    grepl("Dove", species, ignore.case = TRUE) ~ "dove.png",
     
     # Snakes
     grepl("Python|Boa|African Rock Python|Burmese Python", species, ignore.case = TRUE) ~ "python.png",
@@ -123,7 +127,6 @@ get_icon_url <- function(species) {
     grepl("Mosquito|Anopheles|Aedes|Culex", species, ignore.case = TRUE) ~ "mosquito.png",
     grepl("Fly|Mayfly|Crane|Firefly|Gallinipper|Tsetse Fly", species, ignore.case = TRUE) ~ "tsetse_fly.png",
     grepl("Termite", species, ignore.case = TRUE) ~ "termite.png",
-    grepl("Millipede|Centipede|Myriapod", species, ignore.case = TRUE) ~ "millipede_centipede.png",
     grepl("Spider|Orbweaver|Meshweaver|Sheet-weaver|Micropanther", species, ignore.case = TRUE) ~ "spider.png",
     grepl("Butterfly|Monarch|Viceroy|Swallowtail|Morpho|Fritillary|Checkerspot|Skipper", species, ignore.case = TRUE) ~ "butterfly.png",
     grepl("Beetle|Scarab|Cadelle|Ladybug|Weevil|Discoderus", species, ignore.case = TRUE) ~ "beetle.png",
